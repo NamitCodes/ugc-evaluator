@@ -4,45 +4,14 @@
     <title>Your Score</title>
   </head>
   <body>
-    <h2>Your UGC NET Score</h2>
-
-    <h3>Paper 1</h3>
+    <h2>Your Score Summary</h2>
     <ul>
-      <li>Correct: {{ p1_correct }}</li>
-      <li>Wrong: {{ p1_wrong }}</li>
-      <li>Unattempted: {{ p1_unattempted }}</li>
-      <li>Score: {{ p1_score }} / {{ p1_total }}</li>
-      <li>Percentage: {{ p1_percentage }}%</li>
+      <li>Correct: {{ correct }}</li>
+      <li>Wrong: {{ wrong }}</li>
+      <li>Unattempted: {{ unattempted }}</li>
+      <li>Total Score: {{ score }} / {{ total }}</li>
+      <li>Percentage: {{ percentage }}%</li>
     </ul>
-
-    <h3>Paper 2</h3>
-    <ul>
-      <li>Correct: {{ p2_correct }}</li>
-      <li>Wrong: {{ p2_wrong }}</li>
-      <li>Unattempted: {{ p2_unattempted }}</li>
-      <li>Score: {{ p2_score }} / {{ p2_total }}</li>
-      <li>Percentage: {{ p2_percentage }}%</li>
-    </ul>
-
-    <hr />
-    <h3>Total</h3>
-    <ul>
-      <li>Total Score: {{ total_score }} / {{ total_possible }}</li>
-      <li>Percentage: {{ total_percentage }}%</li>
-    </ul>
-    <hr />
-
-    <br />
-
     <a href="/">Try Another</a>
-
-    <br />
-    <br />
-    <p>if this helped, paise bhej do bhot saare</p>
-    <img
-      src="{{ url_for('static', filename='upi_qr.jpg') }}"
-      alt="UPI QR"
-      width="200"
-    />
   </body>
 </html>
