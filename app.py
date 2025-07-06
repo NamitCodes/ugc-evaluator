@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify, render_template
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -8,14 +8,9 @@ app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ANSWER_KEY_PATH = os.path.join(BASE_DIR, 'answer_key.json')
-
-# Load flat answer key
+# Load your master answer key (already available)
 with open(ANSWER_KEY_PATH, 'r') as f:
-    full_answer_key = json.load(f)
-
-# Automatically split the first 50 as Paper 1, rest as Paper 2
-answer_key_p1 = dict(list(full_answer_key.items())[:50])
-answer_key_p2 = dict(list(full_answer_key.items())[50:])
+    answer_key = json.load(f)
 
 def extract_user_responses(html_text):
     soup = BeautifulSoup(html_text, "html.parser")
@@ -29,6 +24,7 @@ def extract_user_responses(html_text):
         if not menu_tbl:
             continue
 
+        # Extract all <td> tags and pair them as (label, value)
         tds = menu_tbl.find_all("td")
         for i in range(0, len(tds) - 1, 2):
             label = tds[i].get_text(strip=True)
@@ -44,6 +40,7 @@ def extract_user_responses(html_text):
 
     return user_responses
 
+
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -53,37 +50,41 @@ def check_score():
     url = request.form.get("ugcnet_url")
 
     try:
-        response = requests.get(url, timeout=10)
+        headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+}
+
+        response = requests.get(url, headers=headers, timeout=10)
+        # print("HTML length:", len(response.text))  # Add this
+        # print("HTML response on Render:\n", response.text)
+
+        # with open("responses_raw.html", "w", encoding="utf-8") as f:
+        #     f.write(response.text)
+
         user_responses = extract_user_responses(response.text)
 
-        def evaluate(key_subset):
-            correct = wrong = unattempted = 0
-            for qid, correct_ans in key_subset.items():
-                user_ans = user_responses.get(qid, "")
-                if user_ans == "":
-                    unattempted += 1
-                elif user_ans == correct_ans:
-                    correct += 1
-                else:
-                    wrong += 1
-            total = len(key_subset) * 2
-            score = correct * 2
-            percentage = round((score / total) * 100, 2)
-            return correct, wrong, unattempted, score, total, percentage
+        # print("USER_RESPONSES: ",user_responses)
 
-        c1, w1, u1, s1, t1, p1 = evaluate(answer_key_p1)
-        c2, w2, u2, s2, t2, p2 = evaluate(answer_key_p2)
+        correct = wrong = unattempted = 0
+        for qid, correct_ans in answer_key.items():
+            user_ans = user_responses.get(qid, "")
+            if user_ans == "":
+                unattempted += 1
+            elif user_ans == correct_ans:
+                correct += 1
+            else:
+                wrong += 1
 
-        return render_template("result.html",
-                               p1_correct=c1, p1_wrong=w1, p1_unattempted=u1, p1_score=s1, p1_total=t1, p1_percentage=p1,
-                               p2_correct=c2, p2_wrong=w2, p2_unattempted=u2, p2_score=s2, p2_total=t2, p2_percentage=p2,
-                               total_score=s1 + s2,
-                               total_possible=t1 + t2,
-                               total_percentage=round(((s1 + s2) / (t1 + t2)) * 100, 2)
-                               )
+        score = correct * 2
+        total = len(answer_key) * 2
+        percentage = round((score / total) * 100, 2)
+
+        return render_template("result.html", correct=correct, wrong=wrong,
+                               unattempted=unattempted, score=score,
+                               total=total, percentage=percentage)
 
     except Exception as e:
-        return f"❌ Error: {str(e)}", 500
+        return f"❌ Error fetching or processing the URL: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run()
