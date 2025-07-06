@@ -50,8 +50,13 @@ def check_score():
     url = request.form.get("ugcnet_url")
 
     try:
-        response = requests.get(url, timeout=10)
+        headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+}
+
+        response = requests.get(url, headers=headers, timeout=10)
         print("HTML length:", len(response.text))  # Add this
+        print("HTML response on Render:\n", response.text)
 
         # with open("responses_raw.html", "w", encoding="utf-8") as f:
         #     f.write(response.text)
