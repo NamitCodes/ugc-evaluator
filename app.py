@@ -2,11 +2,14 @@ from flask import Flask, request, jsonify, render_template
 import requests
 from bs4 import BeautifulSoup
 import json
+import os
 
 app = Flask(__name__)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ANSWER_KEY_PATH = os.path.join(BASE_DIR, 'answer_key.json')
 # Load your master answer key (already available)
-with open("answer_key.json", "r") as f:
+with open(ANSWER_KEY_PATH, 'r') as f:
     answer_key = json.load(f)
 
 def extract_user_responses(html_text):
@@ -55,7 +58,7 @@ def check_score():
 
         user_responses = extract_user_responses(response.text)
 
-        # print(user_responses)
+        print(user_responses)
 
         correct = wrong = unattempted = 0
         for qid, correct_ans in answer_key.items():
