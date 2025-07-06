@@ -51,14 +51,14 @@ def check_score():
 
     try:
         response = requests.get(url, timeout=10)
-        # print("HTML length:", len(response.text))  # Add this
+        print("HTML length:", len(response.text))  # Add this
 
         # with open("responses_raw.html", "w", encoding="utf-8") as f:
         #     f.write(response.text)
 
         user_responses = extract_user_responses(response.text)
 
-        print(user_responses)
+        print("USER_RESPONSES: ",user_responses)
 
         correct = wrong = unattempted = 0
         for qid, correct_ans in answer_key.items():
